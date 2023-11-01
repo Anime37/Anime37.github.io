@@ -20,7 +20,7 @@
         <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
 
         <!-- Add an input field and a button for the user to input a new clip slug -->
-        <input type="text" id="newClipSlug" placeholder="Enter a Clip Slug">
+        <input type="text" id="newClipSlug" placeholder="Enter a new Clip Slug">
         <button onclick="updateClipSlug()">Update Clip</button>
     </div>
 
@@ -60,6 +60,11 @@
             var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
             document.getElementById('clip_frame').setAttribute('src', srcUrl);
         }
+
+        // Reload the page every 30 seconds (30000 milliseconds)
+        setInterval(function () {
+            location.reload();
+        }, 30000);
     </script>
 </body>
 
