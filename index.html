@@ -9,6 +9,10 @@
     <!-- Create an empty iframe with an ID -->
     <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
 
+    <!-- Add an input field and a button for the user to input a new clip slug -->
+    <input type="text" id="newClipSlug" placeholder="Enter A Clip Slug">
+    <button onclick="updateClipSlug()">Update Clip</button>
+
     <script type="text/javascript">
         // Define your parent domains
         var parentDomains = ['anime37.github.io'];
@@ -23,25 +27,28 @@
             return localStorage.getItem('clipSlug');
         }
 
-        // Get the clip slug from local storage or use a default value
-        var clipSlug = getClipSlug() || "AliveAdventurousSmoothieStoneLightning-id1aloiV4ly0rKRi";
+        // Function to update the clipSlug and load the iframe
+        function updateClipSlug() {
+            var newClipSlug = document.getElementById('newClipSlug').value;
+            if (newClipSlug) { // Check if a new slug has been entered
+                setClipSlug(newClipSlug);
 
-        // Build the src URL for the iframe
-        var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
+                // Build the src URL for the iframe with autoplay=true
+                var srcUrl = "https://clips.twitch.tv/embed?clip=" + newClipSlug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
 
-        // Set the iframe's src attribute with the built URL
-        document.getElementById('clip_frame').setAttribute('src', srcUrl);
+                // Set the iframe's src attribute with the updated URL
+                document.getElementById('clip_frame').setAttribute('src', srcUrl);
+            }
+        }
 
-        // Reload the page every 30 seconds (30000 milliseconds)
-        setInterval(function () {
-            location.reload();
-        }, 35000);
+        // Get the clip slug from local storage
+        var clipSlug = getClipSlug();
 
-        // Add an event listener to update the clip slug when the user changes it
-        document.getElementById('clip_frame').addEventListener('change', function (event) {
-            var newClipSlug = event.target.value;
-            setClipSlug(newClipSlug);
-        });
+        // If a slug is saved in local storage, load the clip
+        if (clipSlug) {
+            var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
+            document.getElementById('clip_frame').setAttribute('src', srcUrl);
+        }
     </script>
 </body>
 
