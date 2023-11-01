@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Embed Twitch Clip</title>
+</head>
+<body>
+  <!-- Create an empty iframe with an ID -->
+  <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
+
+  <script type="text/javascript">
+    // Define your parent domains
+    var parentDomains = ['anime37.github.io'];
+
+    // Define your Bearer token
+    var bearerToken = 'YOUR_BEARER_TOKEN'; // Replace with your actual Bearer token
+
+    // Function to fetch the clipSlug from an API
+    function fetchClipSlug() {
+      fetch('https://example.com/api/getClipSlug', {
+        headers: {
+          'Authorization': 'Bearer ' + bearerToken
+        }
+      })
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(data) {
+          // Use the fetched clipSlug
+          var clipSlug = data.clipSlug;
+
+          // Build the src URL for the iframe
+          var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&parent=" + parentDomains.join('&parent=');
+
+          // Set the iframe's src attribute with the built URL
+          document.getElementById('clip_frame').setAttribute('src', srcUrl);
+        })
+        .catch(function(error) {
+          console.error('Error fetching clipSlug:', error);
+        });
+    }
+
+    // Fetch the clipSlug initially
+    fetchClipSlug();
+
+    // Reload the page every 30 seconds
+    setInterval(function() {
+      location.reload();
+    }, 30000);
+  </script>
+</body>
+</html>

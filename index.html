@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Embed Twitch Clip</title>
+  <title>Twitch Clip Player</title>
 </head>
 <body>
   <!-- Create an empty iframe with an ID -->
@@ -10,14 +11,35 @@
     // Define your parent domains
     var parentDomains = ['anime37.github.io'];
 
-    // Define the clip slug as a variable
-    var clipSlug = "ScaryObservantKimchiMingLee-Xrtjzt4vuET2Q1Ex";
+    // Function to set the clip slug in local storage
+    function setClipSlug(slug) {
+      localStorage.setItem('clipSlug', slug);
+    }
+
+    // Function to get the clip slug from local storage
+    function getClipSlug() {
+      return localStorage.getItem('clipSlug');
+    }
+
+    // Get the clip slug from local storage or use a default value
+    var clipSlug = getClipSlug() || "ScaryObservantKimchiMingLee-Xrtjzt4vuET2Q1Ex";
 
     // Build the src URL for the iframe
     var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&parent=" + parentDomains.join('&parent=');
 
     // Set the iframe's src attribute with the built URL
     document.getElementById('clip_frame').setAttribute('src', srcUrl);
+
+    // Reload the page every 30 seconds (30000 milliseconds)
+    setInterval(function() {
+      location.reload();
+    }, 31000);
+
+    // Add an event listener to update the clip slug when the user changes it
+    document.getElementById('clip_frame').addEventListener('change', function (event) {
+      var newClipSlug = event.target.value;
+      setClipSlug(newClipSlug);
+    });
   </script>
 </body>
 </html>
