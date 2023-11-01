@@ -1,1 +1,23 @@
-"Hello World" 
+<html>
+<head>
+  <title>Embed Twitch Clip</title>
+</head>
+<body>
+  <!-- Create an empty iframe with an ID -->
+  <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
+
+  <script type="text/javascript">
+    // Define your parent domains
+    var parentDomains = ['localhost'];
+
+    // Define the clip slug as a variable
+    var clipSlug = "ScaryObservantKimchiMingLee-Xrtjzt4vuET2Q1Ex";
+
+    // Build the src URL for the iframe
+    var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&parent=" + parentDomains.join('&parent=');
+
+    // Set the iframe's src attribute with the built URL
+    document.getElementById('clip_frame').setAttribute('src', srcUrl);
+  </script>
+</body>
+</html>
