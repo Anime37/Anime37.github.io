@@ -89,11 +89,22 @@
             if (storedClipFile) {
                 // Load the corresponding file if available
                 var fileInput = document.getElementById('fileInput');
-                fileInput.value = ''; // Clear any previously selected file to avoid issues with browsers not triggering 'change' event when selecting the same file
+                fileInput.value = ''; // Clear any previously selected file to ensure the change event is triggered
                 fileInput.files = [new File([""], storedClipFile)];
                 startClipRotation();
             }
         };
+
+        // Add an event listener to the file input to handle file changes
+        document.getElementById('fileInput').addEventListener('change', function () {
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            if (file) {
+                fileInput.value = ''; // Clear any previously selected file to ensure the change event is triggered
+                fileInput.files = [new File([""], file.name)];
+                startClipRotation();
+            }
+        });
     </script>
 </body>
 
