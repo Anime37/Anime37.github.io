@@ -34,8 +34,8 @@
     </div>
 
     <script type="text/javascript">
-        // Define your parent domains
         var parentDomains = ['anime37.github.io'];
+
         var initialReloadTime = 35000;
         let reloadInterval;
 
@@ -51,7 +51,7 @@
             const file = await fileHandle.getFile();
             const contents = await file.text();
             if (contents) {
-                // loadClip(contents);
+                loadClip(contents);
                 let outputDiv = document.getElementById('outputDiv');
                 outputDiv.innerHTML = contents;
             }
@@ -70,17 +70,14 @@
         // Function to update the reload time
         function updateReloadTime() {
             var newReloadTime = document.getElementById('reloadTime').value;
-            if (newReloadTime) { // Check if a new reload time has been entered
+            if (newReloadTime) {
                 setReloadTime(newReloadTime);
-                reloadInterval = setInterval(function () {
-                    location.reload();
-                }, newReloadTime);
             }
         }
 
         function setReloadInterval(reloadTime) {
             if (reloadInterval !== undefined) {
-                clearInterval(reloadInterval); // Clear the previous interval
+                clearInterval(reloadInterval);
             }
             setInterval(function () {
                 readFile();
