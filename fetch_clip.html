@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Twitch Clip Fetcher</title>
+    <style>
+        #clip_container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #clip_frame {
+            width: 800px;
+            height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        button {
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="clip_container">
+        <!-- Create an empty iframe with an ID -->
+        <iframe id="clip_frame"></iframe>
+
+        <label for="bearerToken">Bearer Token:</label>
+        <input type="text" id="bearerToken" name="bearerToken" placeholder="Enter Bearer Token">
+
+        <label for="clientId">Client ID:</label>
+        <input type="text" id="clientId" name="clientId" placeholder="Enter Client ID">
+
+        <!-- Add an input field and a button for the user to configure the reload time -->
+        <label for="reloadTime">Reload Time (in milliseconds):</label>
+        <input type="number" id="reloadTime" placeholder="Enter Reload Time">
+
+        <button onclick="startClipRotation()">Start Clip Fetching</button>
+    </div>
+
+    <script type="text/javascript">
+        // Define your parent domains
+        var parentDomains = ['anime37.github.io'];
+
+        let reloadInterval;
+
+        function init() {
+            // Check if there are stored values for bearerToken and clientId
+            const storedBearerToken = getBearerToken();
+            const storedClientId = getClientId();
+
+            if (storedBearerToken) {
+                document.getElementById("bearerToken").value = storedBearerToken;
+            }
+
+            if (storedClientId) {
+                document.getElementById("clientId").value = storedClientId;
+            }
+        }
+
+        function getBearerToken() {
+            return localStorage.getItem('bearerToken');
+        }
+
+        function getClientId() {
+            return localStorage.getItem('clientId');
+        }
+
+        // Function to update the stored values when the Apply Token Info button is pressed
+        function updateTokenInfo() {
+            const bearerToken = document.getElementById("bearerToken").value;
+            const clientId = document.getElementById("clientId").value;
+
+            // Store the values in localStorage
+            localStorage.setItem("bearerToken", bearerToken);
+            localStorage.setItem("clientId", clientId);
+        }
+
+        function logWithTimestamp(input_message) {
+            const now = new Date();
+            const timestamp = now.toISOString(); // Convert the current date to an ISO string
+
+            const message = "[" + timestamp + "] " + input_message;
+
+            console.log(message);
+        }
+
+        function getCurrentTimeRFC3339(offset_seconds) {
+            const now = new Date();
+            now.setSeconds(now.getSeconds() - offset_seconds);
+
+            const year = now.getUTCFullYear();
+            const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(now.getUTCDate()).padStart(2, '0');
+            const hours = String(now.getUTCHours()).padStart(2, '0');
+            const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+        }
+
+        // Function to fetch the clipSlug from an API
+        function fetchClipSlug() {
+            fetch('https://api.twitch.tv/helix/clips?broadcaster_id=556996292&first=1&started_at=' + getCurrentTimeRFC3339(30), {
+                headers: {
+                    'Authorization': 'Bearer ' + getBearerToken(),
+                    'Client-Id': getClientId()
+                }
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                // Check if there is data and it's not empty
+                if (data && data.data && data.data.length > 0) {
+                    loadClip(data.data[0].id);
+                } else {
+                    logWithTimestamp('No data or empty data array.');
+                }
+            }).catch(function (error) {
+                logWithTimestamp('Error fetching clipSlug:', error);
+            });
+        }
+
+        function loadClip(slug) {
+            logWithTimestamp("loading clip: " + slug);
+            var srcUrl = "https://clips.twitch.tv/embed?clip=" + slug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
+            document.getElementById('clip_frame').setAttribute('src', srcUrl);
+        }
+
+        // Function to set the reload time in local storage
+        function setReloadTime(reloadTime) {
+            logWithTimestamp("storing new reload interval: " + reloadTime + "ms");
+            localStorage.setItem('reloadTime', reloadTime);
+        }
+
+        // Function to get the reload time from local storage
+        function getReloadTime() {
+            return localStorage.getItem('reloadTime') || initialReloadTime;
+        }
+
+        // Function to update the reload time
+        function updateReloadTime() {
+            var newReloadTime = document.getElementById('reloadTime').value;
+            if (newReloadTime) {
+                setReloadTime(newReloadTime);
+            }
+        }
+
+        function setReloadInterval(reloadTime) {
+            if (reloadInterval !== undefined) {
+                logWithTimestamp("clearing previous reload interval");
+                clearInterval(reloadInterval);
+            }
+            logWithTimestamp("setting new reload interval: " + reloadTime + "ms");
+            reloadInterval = setInterval(function () {
+                fetchClipSlug();
+            }, reloadTime);
+        }
+
+        function startClipRotation() {
+            updateTokenInfo();
+            if (!getBearerToken()) {
+                logWithTimestamp("bearerToken not set!");
+                return;
+            }
+            if (!getClientId()) {
+                logWithTimestamp("clientId not set!");
+                return;
+            }
+            updateReloadTime();
+            var reloadTime = getReloadTime();
+            fetchClipSlug();
+            setReloadInterval(reloadTime);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
