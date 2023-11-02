@@ -86,11 +86,11 @@
 
         function setReloadInterval(reloadTime) {
             if (reloadInterval !== undefined) {
-                logWithTimestamp("clearing previous reload interval")
+                logWithTimestamp("clearing previous reload interval");
                 clearInterval(reloadInterval);
             }
-            logWithTimestamp("setting new reload interval: " + reloadTime + "ms")
-            setInterval(function () {
+            logWithTimestamp("setting new reload interval: " + reloadTime + "ms");
+            reloadInterval = setInterval(function () {  // Change 'setInterval' to 'reloadInterval'
                 readFile();
             }, reloadTime);
         }
