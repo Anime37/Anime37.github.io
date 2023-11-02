@@ -19,80 +19,51 @@
         <!-- Create an empty iframe with an ID -->
         <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
 
-        <!-- Add an input field and a button for the user to input a new clip slug -->
-        <input type="text" id="newClipSlug" placeholder="Enter a new Clip Slug">
-        <button onclick="updateClipSlug()">Update Clip</button>
+        <!-- Add an input field to upload a text file containing a single clip slug -->
+        <input type="file" id="fileInput" accept=".txt">
 
         <!-- Add an input field and a button for the user to configure the reload time -->
         <input type="number" id="reloadTime" placeholder="Reload Time (in milliseconds)">
-        <button onclick="updateReloadTime()">Apply Reload Time</button>
+        <button onclick="startClipRotation()">Start Clip Rotation</button>
     </div>
 
     <script type="text/javascript">
         // Define your parent domains
         var parentDomains = ['anime37.github.io'];
 
-        // Function to set the clip slug in local storage
-        function setClipSlug(slug) {
-            localStorage.setItem('clipSlug', slug);
-        }
+        // Function to read the file and start clip rotation
+        function startClipRotation() {
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
 
-        // Function to get the clip slug from local storage
-        function getClipSlug() {
-            return localStorage.getItem('clipSlug');
-        }
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    var clipSlug = event.target.result.trim(); // Remove leading/trailing white space
 
-        // Function to update the clipSlug and load the iframe
-        function updateClipSlug() {
-            var newClipSlug = document.getElementById('newClipSlug').value;
-            if (newClipSlug) { // Check if a new slug has been entered
-                setClipSlug(newClipSlug);
+                    if (clipSlug) {
+                        // Get the initial reload time
+                        var initialReloadTime = document.getElementById('reloadTime').value || 30000; // Default reload time: 30 seconds
 
-                // Build the src URL for the iframe with autoplay=true
-                var srcUrl = "https://clips.twitch.tv/embed?clip=" + newClipSlug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
+                        // Set the initial interval to load the clip
+                        loadClip(clipSlug);
 
-                // Set the iframe's src attribute with the updated URL
-                document.getElementById('clip_frame').setAttribute('src', srcUrl);
+                        // Set a recurring interval to reload the same clip
+                        setInterval(function () {
+                            loadClip(clipSlug);
+                        }, initialReloadTime);
+                    }
+                };
+
+                reader.readAsText(file);
             }
         }
 
-        // Function to set the reload time in local storage
-        function setReloadTime(reloadTime) {
-            localStorage.setItem('reloadTime', reloadTime);
-        }
-
-        // Function to get the reload time from local storage
-        function getReloadTime() {
-            return localStorage.getItem('reloadTime');
-        }
-
-        // Function to update the reload time
-        function updateReloadTime() {
-            var newReloadTime = document.getElementById('reloadTime').value;
-            if (newReloadTime) { // Check if a new reload time has been entered
-                setReloadTime(newReloadTime);
-
-                clearInterval(reloadInterval); // Clear the previous interval
-                reloadInterval = setInterval(function () {
-                    location.reload();
-                }, newReloadTime);
-            }
-        }
-
-        // Get the clip slug from local storage
-        var clipSlug = getClipSlug();
-
-        // If a slug is saved in local storage, load the clip
-        if (clipSlug) {
-            var srcUrl = "https://clips.twitch.tv/embed?clip=" + clipSlug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
+        // Function to load the clip from the slug
+        function loadClip(slug) {
+            var srcUrl = "https://clips.twitch.tv/embed?clip=" + slug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
             document.getElementById('clip_frame').setAttribute('src', srcUrl);
         }
-
-        // Initialize the reload time and set the initial reload interval
-        var initialReloadTime = getReloadTime() || 30000; // Default reload time: 30 seconds
-        var reloadInterval = setInterval(function () {
-            location.reload();
-        }, initialReloadTime);
     </script>
 </body>
 
