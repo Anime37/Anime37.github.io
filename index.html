@@ -39,12 +39,20 @@
         var initialReloadTime = 35000;
         let reloadInterval;
 
+        function logWithTimestamp(input_message) {
+            const now = new Date();
+            const timestamp = now.toISOString(); // Convert the current date to an ISO string
+
+            const message = "[" + timestamp + "] " + input_message;
+
+            console.log(message);
+        }
+
         let fileHandle;
         async function selectFile() {
             [fileHandle] = await window.showOpenFilePicker();
             let filenameDiv = document.getElementById('filenameDiv');
             filenameDiv.innerHTML = fileHandle.name;
-            readFile();
         };
 
         async function readFile() {
@@ -59,6 +67,7 @@
 
         // Function to set the reload time in local storage
         function setReloadTime(reloadTime) {
+            logWithTimestamp("storing new reload interval: " + reloadTime + "ms")
             localStorage.setItem('reloadTime', reloadTime);
         }
 
@@ -77,8 +86,10 @@
 
         function setReloadInterval(reloadTime) {
             if (reloadInterval !== undefined) {
+                logWithTimestamp("clearing previous reload interval")
                 clearInterval(reloadInterval);
             }
+            logWithTimestamp("setting new reload interval: " + reloadTime + "ms")
             setInterval(function () {
                 readFile();
             }, reloadTime);
@@ -87,7 +98,7 @@
         // Function to read the file and start clip rotation
         function startClipRotation() {
             if (typeof fileHandle === 'undefined') {
-                console.log("file not set!");
+                logWithTimestamp("file not set!");
                 return;
             }
             var reloadTime = getReloadTime();
@@ -97,6 +108,7 @@
 
         // Function to load the clip from the slug
         function loadClip(slug) {
+            logWithTimestamp("loading clip: " + slug);
             var srcUrl = "https://clips.twitch.tv/embed?clip=" + slug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
             document.getElementById('clip_frame').setAttribute('src', srcUrl);
         }
