@@ -20,46 +20,82 @@
         <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
 
         <!-- Add an input field to upload a text file containing a single clip slug -->
-        <input type="file" id="fileInput" accept=".txt">
+        <div>
+            <p><button onclick="selectFile()">Choose clip slug file</button></p>
+            <div id="filenameDiv" style="background: #fff;"></div>
+        </div>
+        <div id="outputDiv" style="background: #fff;"></div>
 
         <!-- Add an input field and a button for the user to configure the reload time -->
         <input type="number" id="reloadTime" placeholder="Reload Time (in milliseconds)">
+        <button onclick="updateReloadTime()">Apply Reload Time</button>
+
         <button onclick="startClipRotation()">Start Clip Rotation</button>
     </div>
 
     <script type="text/javascript">
         // Define your parent domains
         var parentDomains = ['anime37.github.io'];
+        var initialReloadTime = 35000;
+        let reloadInterval;
+
+        let fileHandle;
+        async function selectFile() {
+            [fileHandle] = await window.showOpenFilePicker();
+            let filenameDiv = document.getElementById('filenameDiv');
+            filenameDiv.innerHTML = fileHandle.name;
+            readFile();
+        };
+
+        async function readFile() {
+            const file = await fileHandle.getFile();
+            const contents = await file.text();
+            if (contents) {
+                // loadClip(contents);
+                let outputDiv = document.getElementById('outputDiv');
+                outputDiv.innerHTML = contents;
+            }
+        }
+
+        // Function to set the reload time in local storage
+        function setReloadTime(reloadTime) {
+            localStorage.setItem('reloadTime', reloadTime);
+        }
+
+        // Function to get the reload time from local storage
+        function getReloadTime() {
+            return localStorage.getItem('reloadTime') || initialReloadTime;
+        }
+
+        // Function to update the reload time
+        function updateReloadTime() {
+            var newReloadTime = document.getElementById('reloadTime').value;
+            if (newReloadTime) { // Check if a new reload time has been entered
+                setReloadTime(newReloadTime);
+                reloadInterval = setInterval(function () {
+                    location.reload();
+                }, newReloadTime);
+            }
+        }
+
+        function setReloadInterval(reloadTime) {
+            if (reloadInterval !== undefined) {
+                clearInterval(reloadInterval); // Clear the previous interval
+            }
+            setInterval(function () {
+                readFile();
+            }, reloadTime);
+        }
 
         // Function to read the file and start clip rotation
         function startClipRotation() {
-            var fileInput = document.getElementById('fileInput');
-            var file = fileInput.files[0];
-
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function (event) {
-                    var clipSlug = event.target.result.trim(); // Remove leading/trailing white space
-
-                    if (clipSlug) {
-                        // Store the file name or identifier in a browser cookie
-                        document.cookie = "clipFile=" + encodeURIComponent(file.name);
-
-                        // Get the initial reload time
-                        var initialReloadTime = document.getElementById('reloadTime').value || 30000; // Default reload time: 30 seconds
-
-                        // Set the initial interval to load the clip
-                        loadClip(clipSlug);
-
-                        // Set a recurring interval to reload the same clip
-                        setInterval(function () {
-                            loadClip(clipSlug);
-                        }, initialReloadTime);
-                    }
-                };
-
-                reader.readAsText(file);
+            if (typeof fileHandle === 'undefined') {
+                console.log("file not set!");
+                return;
             }
+            var reloadTime = getReloadTime();
+            readFile();
+            setReloadInterval(reloadTime)
         }
 
         // Function to load the clip from the slug
@@ -67,36 +103,6 @@
             var srcUrl = "https://clips.twitch.tv/embed?clip=" + slug + "&autoplay=true&parent=" + parentDomains.join('&parent=');
             document.getElementById('clip_frame').setAttribute('src', srcUrl);
         }
-
-        // Check if a file name or identifier is stored in the browser cookie
-        function getStoredClipFile() {
-            var name = "clipFile=";
-            var decodedCookie = decodeURIComponent(document.cookie);
-            var cookieArray = decodedCookie.split(';');
-
-            for (var i = 0; i < cookieArray.length; i++) {
-                var cookie = cookieArray[i].trim();
-                if (cookie.indexOf(name) === 0) {
-                    return cookie.substring(name.length);
-                }
-            }
-            return "";
-        }
-
-        // On page load, check for a stored file and load it if found
-        window.onload = function () {
-            var storedClipFile = getStoredClipFile();
-            if (storedClipFile) {
-                // Load the corresponding file if available
-                var fileInput = document.getElementById('fileInput');
-                fileInput.value = ''; // Clear any previously selected file to ensure the change event is triggered
-                var newInput = fileInput.cloneNode(true);
-                newInput.addEventListener('change', function () {
-                    startClipRotation();
-                });
-                fileInput.parentNode.replaceChild(newInput, fileInput);
-            }
-        };
     </script>
 </body>
 
