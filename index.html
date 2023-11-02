@@ -22,6 +22,10 @@
         <!-- Add an input field and a button for the user to input a new clip slug -->
         <input type="text" id="newClipSlug" placeholder="Enter a new Clip Slug">
         <button onclick="updateClipSlug()">Update Clip</button>
+
+        <!-- Add an input field and a button for the user to configure the reload time -->
+        <input type="number" id="reloadTime" placeholder="Reload Time (in milliseconds)">
+        <button onclick="updateReloadTime()">Apply Reload Time</button>
     </div>
 
     <script type="text/javascript">
@@ -52,6 +56,29 @@
             }
         }
 
+        // Function to set the reload time in local storage
+        function setReloadTime(reloadTime) {
+            localStorage.setItem('reloadTime', reloadTime);
+        }
+
+        // Function to get the reload time from local storage
+        function getReloadTime() {
+            return localStorage.getItem('reloadTime');
+        }
+
+        // Function to update the reload time
+        function updateReloadTime() {
+            var newReloadTime = document.getElementById('reloadTime').value;
+            if (newReloadTime) { // Check if a new reload time has been entered
+                setReloadTime(newReloadTime);
+
+                clearInterval(reloadInterval); // Clear the previous interval
+                reloadInterval = setInterval(function () {
+                    location.reload();
+                }, newReloadTime);
+            }
+        }
+
         // Get the clip slug from local storage
         var clipSlug = getClipSlug();
 
@@ -61,10 +88,11 @@
             document.getElementById('clip_frame').setAttribute('src', srcUrl);
         }
 
-        // Reload after clip finishes playing
-        setInterval(function () {
+        // Initialize the reload time and set the initial reload interval
+        var initialReloadTime = getReloadTime() || 30000; // Default reload time: 30 seconds
+        var reloadInterval = setInterval(function () {
             location.reload();
-        }, 32000);
+        }, initialReloadTime);
     </script>
 </body>
 
