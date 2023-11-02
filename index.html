@@ -67,7 +67,7 @@
 
         // Function to set the reload time in local storage
         function setReloadTime(reloadTime) {
-            logWithTimestamp("storing new reload interval: " + reloadTime + "ms")
+            logWithTimestamp("storing new reload interval: " + reloadTime + "ms");
             localStorage.setItem('reloadTime', reloadTime);
         }
 
@@ -103,7 +103,7 @@
             }
             var reloadTime = getReloadTime();
             readFile();
-            setReloadInterval(reloadTime)
+            setReloadInterval(reloadTime);
         }
 
         // Function to load the clip from the slug
