@@ -11,6 +11,16 @@
             justify-content: center;
             height: 100vh;
         }
+
+        #filenameDiv {
+            margin-bottom: 20px;
+            background: #fff;
+        }
+
+        #clipSlug {
+            margin-bottom: 20px;
+            background: #fff;
+        }
     </style>
 </head>
 
@@ -20,14 +30,19 @@
         <iframe id="clip_frame" style="width: 800px; height: 400px;"></iframe>
 
         <!-- Add an input field to upload a text file containing a single clip slug -->
-        <div>
-            <p><button onclick="selectFile()">Choose clip slug file</button></p>
-            <div id="filenameDiv" style="background: #fff;"></div>
-        </div>
-        <div id="outputDiv" style="background: #fff;"></div>
+        <label for="clipSlug">Clip Slug File: (lowest priority):</label>
+
+        <!-- Read slug from file (lowest prio) -->
+        <button onclick="selectFile()">Choose clip slug file</button>
+        <div id="filenameDiv" style="background: #fff;"></div>
+
+        <!-- Read slug from input field (highest prio) -->
+        <label for="clipSlug">Custom Clip Slug (highest priority):</label>
+        <input type="text" id="clipSlug" name="clipSlug" placeholder="Enter Custom Clip Slug">
 
         <!-- Add an input field and a button for the user to configure the reload time -->
-        <input type="number" id="reloadTime" placeholder="Reload Time (in milliseconds)">
+        <label for="clipSlug">Reload Time (in milliseconds):</label>
+        <input type="number" id="reloadTime" placeholder="Enter Reload Time (ms)">
         <button onclick="updateReloadTime()">Apply Reload Time</button>
 
         <button onclick="startClipRotation()">Start Clip Rotation</button>
@@ -56,12 +71,19 @@
         };
 
         async function readFile() {
-            const file = await fileHandle.getFile();
-            const contents = await file.text();
+            let contents;
+            if (typeof fileHandle === 'undefined') {
+                let clipSlug = document.getElementById('clipSlug');
+                contents = clipSlug.value;
+                logWithTimestamp(contents);
+            } else {
+                const file = await fileHandle.getFile();
+                contents = await file.text();
+            }
             if (contents) {
                 loadClip(contents);
-                let outputDiv = document.getElementById('outputDiv');
-                outputDiv.innerHTML = contents;
+            } else {
+                logWithTimestamp('no clip slug configured');
             }
         }
 
@@ -97,10 +119,6 @@
 
         // Function to read the file and start clip rotation
         function startClipRotation() {
-            if (typeof fileHandle === 'undefined') {
-                logWithTimestamp("file not set!");
-                return;
-            }
             var reloadTime = getReloadTime();
             readFile();
             setReloadInterval(reloadTime);
